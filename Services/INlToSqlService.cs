@@ -10,5 +10,5 @@ public interface INlToSqlService
     /// <param name="question">The natural language question for which a SQL query is to be generated.</param>
     /// <param name="model"></param>
     /// <returns>A <see cref="ApiResult"/> object containing the generated SQL query, thoughts, and any additional response details.</returns>
-    ApiResult GenerateSqlQuery(string question, AIModels model);
+    ApiResult GenerateSqlQuery(string question, AIModels model, string userId);
 }

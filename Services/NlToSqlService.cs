@@ -6,22 +6,44 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace AswinsIntelligence.Services;
 
-public class NlToSqlService(IChatCompletionService chatCompletionService) : INlToSqlService
+public class NlToSqlService(IChatCompletionService chatCompletionService,IConversationService conversationService) : INlToSqlService
 {
     /// <inheritdoc />
-    public ApiResult GenerateSqlQuery(string question, AIModels model)
+    public ApiResult GenerateSqlQuery(string question, AIModels model,string userId = "default")
     {
         if (model == AIModels.DeepseekR1)
         {
             return ProcessWithLocalLlm(question);
         }
 
-        return ProcessWithOpenAI(question);
+        return ProcessWithOpenAI(question,userId);
     }
 
-    private ApiResult ProcessWithOpenAI(string question)
+    private ApiResult ProcessWithOpenAI(string question,string userId)
     {
-        return null;
+        var chatHistory = conversationService.GetOrCreateConversation(userId);
+        
+        // Only add system message if this is a new conversation
+        if (chatHistory.Count == 0)
+        {
+            var prompt = File.ReadAllText(Path.Combine(
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), 
+                "Prompts", "SystemMessage.txt"));
+            chatHistory.AddSystemMessage(prompt);
+        }
+
+        chatHistory.AddUserMessage($"Generate a SQL query for Microsoft SQL Server that answers this question:{question}.");
+        
+        var reply = chatCompletionService.GetChatMessageContentAsync(chatHistory).GetAwaiter().GetResult();
+        var replyContent = reply.Content ?? string.Empty;
+        chatHistory.AddMessage(reply.Role, replyContent);
+
+
+        return new ApiResult
+        {
+            SqlQuery = replyContent.Replace("sql", "").Replace("`", "").Trim()
+        };
+
     }
 
     private ApiResult ProcessWithLocalLlm(string question)
@@ -30,21 +52,22 @@ public class NlToSqlService(IChatCompletionService chatCompletionService) : INlT
         var prompt = File.ReadAllText(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Prompts", "SystemMessage.txt"));
 
         chatHistory.AddSystemMessage(prompt);
-        chatHistory.AddUserMessage($"Generate a SQL query for Microsoft SQL Server that answers this question:{question}. Only return the SQL query without any explanations.");
+        chatHistory.AddUserMessage($"Generate a SQL query for Microsoft SQL Server that answers this question:{question}.");
 
         var reply = chatCompletionService.GetChatMessageContentAsync(chatHistory).GetAwaiter().GetResult();
         var replyContent = reply.Content ?? string.Empty;
         chatHistory.AddMessage(reply.Role, replyContent);
 
-        return ParseLlmResponse(replyContent);
+        return ParseLlmResponseForOllama(replyContent);
     }
 
+ 
     /// <summary>
     /// Parses the response from the language model to extract SQL query and additional details.
     /// </summary>
     /// <param name="response">The raw response string from the language model.</param>
     /// <returns>A <see cref="ApiResult"/> object containing parsed thoughts and SQL query.</returns>
-    private ApiResult ParseLlmResponse(string response)
+    private ApiResult ParseLlmResponseForOllama(string response)
     {
         var result = new ApiResult();
 

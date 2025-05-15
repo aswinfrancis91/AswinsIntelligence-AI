@@ -9,11 +9,15 @@ builder.Services.AddOpenApi();
 
 var client = new HttpClient();
 client.Timeout = TimeSpan.FromMinutes(60);
-client.BaseAddress = new Uri("http://localhost:11434");
+client.BaseAddress = new Uri(builder.Configuration["Ollama:Endpoint"]);
 
 builder.Services.AddOllamaChatCompletion(modelId: "deepseek-r1:latest", httpClient: client);
 builder.Services.AddSingleton<INlToSqlService, NlToSqlService>();
 builder.Services.AddScoped<IDbService, DbService>();
+builder.Services.AddSingleton<IConversationService, ConversationService>();
+
+
+builder.Services.AddOpenAIChatCompletion(modelId:"o4-mini",apiKey:builder.Configuration["OpenAi:ApiKey"]);
 
 var app = builder.Build();
 
@@ -26,12 +30,20 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 
-app.MapPost("/AskAswin", (string question, INlToSqlService nlToSqlService, IDbService dbService, AIModels model = AIModels.DeepseekR1) =>
+app.MapPost("/AskAswin", (string question, INlToSqlService nlToSqlService, IDbService dbService, string userId = "default", AIModels model = AIModels.DeepseekR1) =>
     {
-        var result = nlToSqlService.GenerateSqlQuery(question, model);
+        var result = nlToSqlService.GenerateSqlQuery(question, model,userId);
         result.DbResult = dbService.ExecuteQuery(result.SqlQuery);
         return result;
     })
     .WithName("GetAnswers");
+
+app.MapPost("/ResetConversation", (string userId, IConversationService conversationService) =>
+    {
+        conversationService.ResetConversation(userId ?? "default");
+        return Results.Ok(new { message = "Conversation reset successfully" });
+    })
+    .WithName("ResetConversation");
+
 
 app.Run();
