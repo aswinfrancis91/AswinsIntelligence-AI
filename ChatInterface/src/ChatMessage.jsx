@@ -39,7 +39,7 @@ const ChatMessage = ({ message }) => {
             // Check if the response is a valid base64 string
             if (response.data && typeof response.data === 'string') {
                 // Prepend the data URL prefix for image rendering
-                const imageData = `data:image/png;base64, ${response.data}`;
+                const imageData = `data:image/png;base64,${response.data}`;
                 setChartImage(imageData);
                 setShowChart(true);
             } else {
@@ -49,6 +49,57 @@ const ChatMessage = ({ message }) => {
             console.error('Error generating chart:', error);
         } finally {
             setLoadingChart(false);
+        }
+    };
+
+    // Function to export JSON data as CSV
+    const exportToCSV = () => {
+        if (!isTableData(message.text)) return;
+
+        try {
+            const data = JSON.parse(message.text);
+            if (!Array.isArray(data) || data.length === 0) {
+                console.error('No data to export');
+                return;
+            }
+
+            // Get headers from the first object
+            const headers = Object.keys(data[0]);
+
+            // Create CSV content with headers
+            let csvContent = headers.join(',') + '\n';
+
+            // Add data rows
+            data.forEach(row => {
+                const rowValues = headers.map(header => {
+                    // Handle values that might contain commas or quotes
+                    const cellValue = row[header];
+                    if (cellValue === null || cellValue === undefined) {
+                        return '';
+                    }
+                    const cell = String(cellValue);
+                    // Escape quotes and wrap in quotes if needed
+                    if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
+                        return `"${cell.replace(/"/g, '""')}"`;
+                    }
+                    return cell;
+                });
+                csvContent += rowValues.join(',') + '\n';
+            });
+
+            // Create and download the CSV file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'data_export.csv');
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+        } catch (error) {
+            console.error('Error exporting to CSV:', error);
         }
     };
 
@@ -105,15 +156,24 @@ const ChatMessage = ({ message }) => {
                     {renderTable(message.text)}
 
                     <div className="chart-controls">
-                        {!chartImage && (
+                        <div className="button-group">
+                            {!chartImage && (
+                                <button
+                                    className="chart-button"
+                                    onClick={generateChart}
+                                    disabled={loadingChart}
+                                >
+                                    {loadingChart ? "Generating chart..." : "Generate Chart"}
+                                </button>
+                            )}
+
                             <button
-                                className="chart-button"
-                                onClick={generateChart}
-                                disabled={loadingChart}
+                                className="export-csv-button"
+                                onClick={exportToCSV}
                             >
-                                {loadingChart ? "Generating chart..." : "Generate Chart"}
+                                Export to CSV
                             </button>
-                        )}
+                        </div>
 
                         {chartImage && (
                             <div className="chart-container">

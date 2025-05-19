@@ -207,3 +207,43 @@
 .reset-chart-button:hover {
     background-color: #e0e0e0;
 }
+
+/* Add these styles for the Export to CSV button and button group */
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.export-csv-button {
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.export-csv-button:hover {
+    background-color: #1976d2;
+}
+
+.toggle-chart-button {
+    background-color: #f5f5f5;
+    color: #333;
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    padding: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.toggle-chart-button:hover {
+    background-color: #e0e0e0;
+}
