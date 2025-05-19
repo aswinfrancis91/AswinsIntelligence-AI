@@ -15,6 +15,11 @@ export default defineConfig({
         target: 'http://localhost:5257',
         changeOrigin: true,
         secure: false,
+      },
+      '/GenerateGraph': {
+        target: 'http://localhost:5257',
+        changeOrigin: true,
+        secure: false,
       }
     }
   }

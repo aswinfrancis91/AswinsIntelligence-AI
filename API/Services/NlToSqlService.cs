@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using System.Net.Http.Headers;
+using System.Reflection;
+using System.Text;
+using System.Text.Json;
 using AswinsIntelligence.Models;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -6,7 +9,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace AswinsIntelligence.Services;
 
-public class NlToSqlService(IChatCompletionService chatCompletionService,IConversationService conversationService) : INlToSqlService
+public class NlToSqlService(IChatCompletionService chatCompletionService,IConversationService conversationService,IConfiguration configuration) : INlToSqlService
 {
     /// <inheritdoc />
     public ApiResult GenerateSqlQuery(string question, AIModels model,string userId = "default")
@@ -21,32 +24,35 @@ public class NlToSqlService(IChatCompletionService chatCompletionService,IConver
 
     public string GenerateGraph(string question)
     {
-        var chatHistory = new ChatHistory();
-        chatHistory.AddSystemMessage(@"
-You are a data visualization expert. Your task is to create a chart or graph based on the provided database result.
-The chart should be clear, insightful, and directly address the user's question.
+        var client = new HttpClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", configuration["OpenAi:ApiKey"]);
 
+        var requestBody = new
+        {
+            model = "dall-e-3",
+            prompt = $@"
+You are a data visualization expert. Your task is to create a chart or graph based on the provided JSON data. The chart should be clear, insightful, and directly address the user's question.
 You must:
-1. Analyze the data and determine the most appropriate visualization type (bar chart, line chart, pie chart, etc.)
-2. Generate a base64-encoded PNG image of the visualization
-3. Return ONLY the base64-encoded image data with the proper data URI prefix (data:image/png;base64,)
-4. Do not include any explanations, markdown, or code blocks - ONLY the data URI
+1. Generate a base64-encoded PNG image of the visualization
+2. Return ONLY the base64-encoded image data with the proper data URI prefix (data:image/png;base64,)
 
-Guidelines for the visualization:
-- Use appropriate chart types based on the data (bar charts for comparisons, line charts for trends, etc.)
-- Use a clean, professional color scheme
-- Include clear titles, axis labels, and legends
-- Add data labels where appropriate
-- Ensure the visualization is easily readable
-");
+JSON: {question}
+"
+            ,
+            n = 1,
+            size = "1024x1024",
+            response_format = "b64_json"
+        };
 
-        chatHistory.AddUserMessage($"Database result (JSON):{question}. Generate an appropriate visualization for this data as a base64-encoded PNG image. " +
-                                   $"Return ONLY the base64 string with the prefix 'data:image/png;base64,' and nothing else.\n:{question}.");
-        
-        var reply = chatCompletionService.GetChatMessageContentAsync(chatHistory).GetAwaiter().GetResult();
-        var replyContent = reply.Content ?? string.Empty;
-        chatHistory.AddMessage(reply.Role, replyContent);
-        return replyContent;
+        var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+
+        var response = client.PostAsync("https://api.openai.com/v1/images/generations", content).GetAwaiter().GetResult();
+        var responseString = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+        var json = JsonDocument.Parse(responseString);
+        var base64Image = json.RootElement.GetProperty("data")[0].GetProperty("b64_json").GetString();
+
+        return base64Image;
     }
     private ApiResult ProcessWithOpenAI(string question,string userId)
     {

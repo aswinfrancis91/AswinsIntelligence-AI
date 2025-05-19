@@ -1,8 +1,12 @@
 ﻿import React, { useState } from 'react';
+import axios from 'axios';
 import './ChatMessage.css';
 
 const ChatMessage = ({ message }) => {
     const [showDetails, setShowDetails] = useState(false);
+    const [chartImage, setChartImage] = useState(null);
+    const [showChart, setShowChart] = useState(true);
+    const [loadingChart, setLoadingChart] = useState(false);
 
     // Helper to determine if the content is JSON data for a table
     const isTableData = (text) => {
@@ -13,6 +17,44 @@ const ChatMessage = ({ message }) => {
         } catch (e) {
             return false;
         }
+    };
+
+    // Function to generate chart from data
+    const generateChart = async () => {
+        if (!isTableData(message.text)) return;
+
+        // If we already have a chart, just show it
+        if (chartImage) {
+            setShowChart(true);
+            return;
+        }
+
+        setLoadingChart(true);
+        try {
+            // The API expects a 'question' parameter
+            const response = await axios.post(`/GenerateGraph?question=${encodeURIComponent(message.text)}`, null, {
+                responseType: 'text'
+            });
+
+            // Check if the response is a valid base64 string
+            if (response.data && typeof response.data === 'string') {
+                // Prepend the data URL prefix for image rendering
+                const imageData = `data:image/png;base64, ${response.data}`;
+                setChartImage(imageData);
+                setShowChart(true);
+            } else {
+                console.error('Invalid image data received:', response.data);
+            }
+        } catch (error) {
+            console.error('Error generating chart:', error);
+        } finally {
+            setLoadingChart(false);
+        }
+    };
+
+    // Toggle chart visibility
+    const toggleChartVisibility = () => {
+        setShowChart(!showChart);
     };
 
     // Render a table from JSON data
@@ -61,7 +103,47 @@ const ChatMessage = ({ message }) => {
                 <>
                     <p>Here are the results:</p>
                     {renderTable(message.text)}
+
+                    <div className="chart-controls">
+                        {!chartImage && (
+                            <button
+                                className="chart-button"
+                                onClick={generateChart}
+                                disabled={loadingChart}
+                            >
+                                {loadingChart ? "Generating chart..." : "Generate Chart"}
+                            </button>
+                        )}
+
+                        {chartImage && (
+                            <div className="chart-container">
+                                {showChart && (
+                                    <img
+                                        src={chartImage}
+                                        alt="Data visualization"
+                                        className="chart-image"
+                                    />
+                                )}
+                                <button
+                                    className="toggle-chart-button"
+                                    onClick={toggleChartVisibility}
+                                >
+                                    {showChart ? "Hide Chart" : "Show Chart"}
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </>
+            );
+        } else if (message.sender === 'ai' && typeof message.text === 'string' && message.text.startsWith('data:image')) {
+            return (
+                <div className="chart-container">
+                    <img
+                        src={message.text}
+                        alt="Data visualization"
+                        className="chart-image"
+                    />
+                </div>
             );
         }
 
