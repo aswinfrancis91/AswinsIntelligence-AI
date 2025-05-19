@@ -17,7 +17,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="Prompts\SystemMessage.txt">
+      <None Update="Prompts\NlToSql.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Prompts\FormatDbResult.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

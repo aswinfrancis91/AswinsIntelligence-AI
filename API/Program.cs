@@ -16,8 +16,17 @@ builder.Services.AddSingleton<INlToSqlService, NlToSqlService>();
 builder.Services.AddScoped<IDbService, DbService>();
 builder.Services.AddSingleton<IConversationService, ConversationService>();
 
-
 builder.Services.AddOpenAIChatCompletion(modelId:"o4-mini",apiKey:builder.Configuration["OpenAi:ApiKey"]);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", 
+        policy => policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials());
+});
 
 var app = builder.Build();
 
@@ -28,12 +37,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowReactApp");
 
-
-app.MapPost("/AskAswin", (string question, INlToSqlService nlToSqlService, IDbService dbService, string userId = "default", AIModels model = AIModels.DeepseekR1) =>
+app.MapPost("/AskAswin", (string question, INlToSqlService nlToSqlService, IDbService dbService, IFormatResponseService formatResponseService, string userId = "default", AIModels model = AIModels.DeepseekR1) =>
     {
         var result = nlToSqlService.GenerateSqlQuery(question, model,userId);
         result.DbResult = dbService.ExecuteQuery(result.SqlQuery);
+        
         return result;
     })
     .WithName("GetAnswers");
@@ -44,6 +54,13 @@ app.MapPost("/ResetConversation", (string userId, IConversationService conversat
         return Results.Ok(new { message = "Conversation reset successfully" });
     })
     .WithName("ResetConversation");
+
+app.MapPost("/GenerateGraph", (string question, INlToSqlService nlToSqlService, IDbService dbService) =>
+    {
+        var result = nlToSqlService.GenerateGraph(question);
+        return result;
+    })
+    .WithName("GetChart");
 
 
 app.Run();

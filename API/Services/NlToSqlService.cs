@@ -19,6 +19,35 @@ public class NlToSqlService(IChatCompletionService chatCompletionService,IConver
         return ProcessWithOpenAI(question,userId);
     }
 
+    public string GenerateGraph(string question)
+    {
+        var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage(@"
+You are a data visualization expert. Your task is to create a chart or graph based on the provided database result.
+The chart should be clear, insightful, and directly address the user's question.
+
+You must:
+1. Analyze the data and determine the most appropriate visualization type (bar chart, line chart, pie chart, etc.)
+2. Generate a base64-encoded PNG image of the visualization
+3. Return ONLY the base64-encoded image data with the proper data URI prefix (data:image/png;base64,)
+4. Do not include any explanations, markdown, or code blocks - ONLY the data URI
+
+Guidelines for the visualization:
+- Use appropriate chart types based on the data (bar charts for comparisons, line charts for trends, etc.)
+- Use a clean, professional color scheme
+- Include clear titles, axis labels, and legends
+- Add data labels where appropriate
+- Ensure the visualization is easily readable
+");
+
+        chatHistory.AddUserMessage($"Database result (JSON):{question}. Generate an appropriate visualization for this data as a base64-encoded PNG image. " +
+                                   $"Return ONLY the base64 string with the prefix 'data:image/png;base64,' and nothing else.\n:{question}.");
+        
+        var reply = chatCompletionService.GetChatMessageContentAsync(chatHistory).GetAwaiter().GetResult();
+        var replyContent = reply.Content ?? string.Empty;
+        chatHistory.AddMessage(reply.Role, replyContent);
+        return replyContent;
+    }
     private ApiResult ProcessWithOpenAI(string question,string userId)
     {
         var chatHistory = conversationService.GetOrCreateConversation(userId);
@@ -28,10 +57,10 @@ public class NlToSqlService(IChatCompletionService chatCompletionService,IConver
         {
             var prompt = File.ReadAllText(Path.Combine(
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), 
-                "Prompts", "SystemMessage.txt"));
+                "Prompts", "NlToSql.txt"));
             chatHistory.AddSystemMessage(prompt);
         }
-
+        chatHistory.AddSystemMessage("It should output only one SQL query and so if the questions are multiple the SQL query has to be single one");
         chatHistory.AddUserMessage($"Generate a SQL query for Microsoft SQL Server that answers this question:{question}.");
         
         var reply = chatCompletionService.GetChatMessageContentAsync(chatHistory).GetAwaiter().GetResult();
@@ -49,7 +78,7 @@ public class NlToSqlService(IChatCompletionService chatCompletionService,IConver
     private ApiResult ProcessWithLocalLlm(string question)
     {
         var chatHistory = new ChatHistory();
-        var prompt = File.ReadAllText(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Prompts", "SystemMessage.txt"));
+        var prompt = File.ReadAllText(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Prompts", "NlToSql.txt"));
 
         chatHistory.AddSystemMessage(prompt);
         chatHistory.AddUserMessage($"Generate a SQL query for Microsoft SQL Server that answers this question:{question}.");
