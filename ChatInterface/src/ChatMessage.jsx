@@ -5,8 +5,11 @@ import './ChatMessage.css';
 const ChatMessage = ({ message }) => {
     const [showDetails, setShowDetails] = useState(false);
     const [chartImage, setChartImage] = useState(null);
+    const [dalleImage, setDalleImage] = useState(null);
     const [showChart, setShowChart] = useState(true);
+    const [showDalleImage, setShowDalleImage] = useState(true);
     const [loadingChart, setLoadingChart] = useState(false);
+    const [loadingDalleImage, setLoadingDalleImage] = useState(false);
 
     // Helper to determine if the content is JSON data for a table
     const isTableData = (text) => {
@@ -50,6 +53,44 @@ const ChatMessage = ({ message }) => {
         } finally {
             setLoadingChart(false);
         }
+    };
+
+    // Function to generate DALL-E image from data
+    const generateDalleImage = async () => {
+        if (!isTableData(message.text)) return;
+
+        // If we already have a DALL-E image, just show it
+        if (dalleImage) {
+            setShowDalleImage(true);
+            return;
+        }
+
+        setLoadingDalleImage(true);
+        try {
+            // Call the new DALL-E endpoint
+            const response = await axios.post(`/GenerateGraphDallE?question=${encodeURIComponent(message.text)}`, null, {
+                responseType: 'text'
+            });
+
+            // Check if the response is a valid base64 string
+            if (response.data && typeof response.data === 'string') {
+                // Prepend the data URL prefix for image rendering
+                const imageData = `data:image/png;base64,${response.data}`;
+                setDalleImage(imageData);
+                setShowDalleImage(true);
+            } else {
+                console.error('Invalid DALL-E image data received:', response.data);
+            }
+        } catch (error) {
+            console.error('Error generating DALL-E image:', error);
+        } finally {
+            setLoadingDalleImage(false);
+        }
+    };
+
+    // Toggle DALL-E image visibility
+    const toggleDalleImageVisibility = () => {
+        setShowDalleImage(!showDalleImage);
     };
 
     // Function to export JSON data as CSV
@@ -167,6 +208,16 @@ const ChatMessage = ({ message }) => {
                                 </button>
                             )}
 
+                            {!dalleImage && (
+                                <button
+                                    className="dalle-button"
+                                    onClick={generateDalleImage}
+                                    disabled={loadingDalleImage}
+                                >
+                                    {loadingDalleImage ? "Generating DALL-E image..." : "Generate DALL-E Image"}
+                                </button>
+                            )}
+
                             <button
                                 className="export-csv-button"
                                 onClick={exportToCSV}
@@ -189,6 +240,24 @@ const ChatMessage = ({ message }) => {
                                     onClick={toggleChartVisibility}
                                 >
                                     {showChart ? "Hide Chart" : "Show Chart"}
+                                </button>
+                            </div>
+                        )}
+
+                        {dalleImage && (
+                            <div className="dalle-container">
+                                {showDalleImage && (
+                                    <img
+                                        src={dalleImage}
+                                        alt="DALL-E visualization"
+                                        className="dalle-image"
+                                    />
+                                )}
+                                <button
+                                    className="toggle-dalle-button"
+                                    onClick={toggleDalleImageVisibility}
+                                >
+                                    {showDalleImage ? "Hide DALL-E Image" : "Show DALL-E Image"}
                                 </button>
                             </div>
                         )}

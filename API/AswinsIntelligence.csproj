@@ -4,16 +4,17 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <NoWarn>SKEXP0001,SKEXP0070</NoWarn>
+        <NoWarn>SKEXP0001,SKEXP0070,OPENAI001,SKEXP0110</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Dapper" Version="2.1.66" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
         <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
-        <PackageReference Include="Microsoft.SemanticKernel" Version="1.49.0" />
+        <PackageReference Include="Microsoft.SemanticKernel" Version="1.52.1" />
+        <PackageReference Include="Microsoft.SemanticKernel.Agents.OpenAI" Version="1.52.1-preview" />
         <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.49.0-alpha" />
-        <PackageReference Include="Scalar.AspNetCore" Version="2.3.0" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.3.1" />
     </ItemGroup>
 
     <ItemGroup>

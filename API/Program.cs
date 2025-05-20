@@ -16,7 +16,8 @@ builder.Services.AddSingleton<INlToSqlService, NlToSqlService>();
 builder.Services.AddScoped<IDbService, DbService>();
 builder.Services.AddSingleton<IConversationService, ConversationService>();
 
-builder.Services.AddOpenAIChatCompletion(modelId: "o4-mini", apiKey: builder.Configuration["OpenAi:ApiKey"]);
+builder.Services.AddOpenAIChatCompletion(modelId: "gpt-4-turbo", apiKey: builder.Configuration["OpenAi:ApiKey"]);
+builder.Services.AddSingleton<IChartGenerationService, ChartGenerationService>();
 
 builder.Services.AddCors(options =>
 {
@@ -55,12 +56,18 @@ app.MapPost("/ResetConversation", (string userId, IConversationService conversat
     })
     .WithName("ResetConversation");
 
-app.MapPost("/GenerateGraph", (string question, INlToSqlService nlToSqlService, IDbService dbService) =>
+app.MapPost("/GenerateGraphDallE", (string question, INlToSqlService nlToSqlService, IDbService dbService) =>
     {
         var result = nlToSqlService.GenerateGraph(question);
         return result;
     })
-    .WithName("GetChart");
+    .WithName("GetDallEChart");
 
+app.MapPost("/GenerateGraph", (string question, IChartGenerationService chartGenerationService) =>
+    {
+        var result = chartGenerationService.GenerateChart(question);
+        return result;
+    })
+    .WithName("GetChart");
 
 app.Run();
