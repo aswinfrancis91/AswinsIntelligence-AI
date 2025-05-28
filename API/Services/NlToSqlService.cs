@@ -1,7 +1,5 @@
-﻿using System.Net.Http.Headers;
-using System.Reflection;
-using System.Text;
-using System.Text.Json;
+﻿using System.Reflection;
+using AswinsIntelligence.Interfaces;
 using AswinsIntelligence.Models;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -9,66 +7,41 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace AswinsIntelligence.Services;
 
-public class NlToSqlService(IChatCompletionService chatCompletionService,IConversationService conversationService,IConfiguration configuration) : INlToSqlService
+public class NlToSqlService(IChatCompletionService chatCompletionService, IConversationService conversationService, IConfiguration configuration) : INlToSqlService
 {
     /// <inheritdoc />
-    public ApiResult GenerateSqlQuery(string question, AIModels model,string userId = "default")
+    public ApiResult GenerateSqlQuery(string question, AIModels model, string userId = "default")
     {
         if (model == AIModels.DeepseekR1)
         {
             return ProcessWithLocalLlm(question);
         }
 
-        return ProcessWithOpenAI(question,userId);
+        return ProcessWithOpenAI(question, userId);
     }
-
-    public string GenerateGraph(string question)
-    {
-        var client = new HttpClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", configuration["OpenAi:ApiKey"]);
-
-        var requestBody = new
-        {
-            model = "dall-e-3",
-            prompt = $@"
-You are a data visualization expert. Your task is to create a chart or graph based on the provided JSON data. The chart should be clear, insightful, and directly address the user's question.
-You must:
-1. Generate a base64-encoded PNG image of the visualization
-2. Return ONLY the base64-encoded image data with the proper data URI prefix (data:image/png;base64,)
-
-JSON: {question}
-"
-            ,
-            n = 1,
-            size = "1024x1024",
-            response_format = "b64_json"
-        };
-
-        var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
-
-        var response = client.PostAsync("https://api.openai.com/v1/images/generations", content).GetAwaiter().GetResult();
-        var responseString = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-        var json = JsonDocument.Parse(responseString);
-        var base64Image = json.RootElement.GetProperty("data")[0].GetProperty("b64_json").GetString();
-
-        return base64Image;
-    }
-    private ApiResult ProcessWithOpenAI(string question,string userId)
+    
+    /// <summary>
+    /// Processes a natural language question using OpenAI to generate a corresponding SQL query.
+    /// </summary>
+    /// <param name="question">The natural language question to be converted into a SQL query.</param>
+    /// <param name="userId">The unique identifier of the user initiating the query. Defaults to "default".</param>
+    /// <returns>An <see cref="ApiResult"/> containing the generated SQL query.</returns>
+    private ApiResult ProcessWithOpenAI(string question, string userId)
     {
         var chatHistory = conversationService.GetOrCreateConversation(userId);
-        
+
         // Only add system message if this is a new conversation
         if (chatHistory.Count == 0)
         {
             var prompt = File.ReadAllText(Path.Combine(
-                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), 
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                 "Prompts", "NlToSql.txt"));
             chatHistory.AddSystemMessage(prompt);
         }
+
         chatHistory.AddSystemMessage("It should output only one SQL query and so if the questions are multiple the SQL query has to be single one");
         chatHistory.AddUserMessage($"Generate a SQL query for Microsoft SQL Server that answers this question:{question}.");
-        
+
         var reply = chatCompletionService.GetChatMessageContentAsync(chatHistory).GetAwaiter().GetResult();
         var replyContent = reply.Content ?? string.Empty;
         chatHistory.AddMessage(reply.Role, replyContent);
@@ -78,9 +51,15 @@ JSON: {question}
         {
             SqlQuery = replyContent.Replace("sql", "").Replace("`", "").Trim()
         };
-
     }
 
+    #region Ollama
+
+    /// <summary>
+    /// Processes the specified question using a local language model to generate a SQL query.
+    /// </summary>
+    /// <param name="question">The question for which the SQL query should be generated.</param>
+    /// <returns>An <see cref="ApiResult"/> object containing the generated SQL query and relevant details.</returns>
     private ApiResult ProcessWithLocalLlm(string question)
     {
         var chatHistory = new ChatHistory();
@@ -96,7 +75,7 @@ JSON: {question}
         return ParseLlmResponseForOllama(replyContent);
     }
 
- 
+
     /// <summary>
     /// Parses the response from the language model to extract SQL query and additional details.
     /// </summary>
@@ -128,4 +107,6 @@ JSON: {question}
 
         return result;
     }
+
+    #endregion
 }

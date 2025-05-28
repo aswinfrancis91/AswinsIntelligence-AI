@@ -1,9 +1,13 @@
 ﻿using System.Text.Json;
+using AswinsIntelligence.Interfaces;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
 namespace AswinsIntelligence.Services;
 
+/// <summary>
+/// Provides database-related services and functionalities, including executing SQL queries and processing results.
+/// </summary>
 public class DbService(IConfiguration configuration) : IDbService
 {
     private readonly string _connectionString = configuration.GetConnectionString("DefaultConnection")
@@ -33,7 +37,12 @@ public class DbService(IConfiguration configuration) : IDbService
         }
     }
 
-    public IEnumerable<dynamic> ExecuteQueryToDynamic(string sqlQuery)
+    /// <summary>
+    /// Executes the provided SQL query and returns the results as a collection of dynamic objects.
+    /// </summary>
+    /// <param name="sqlQuery">The SQL query to execute against the database.</param>
+    /// <returns>An enumerable collection of dynamic objects representing the query results.</returns>
+    private IEnumerable<dynamic> ExecuteQueryToDynamic(string sqlQuery)
     {
         using var connection = new SqlConnection(_connectionString);
         connection.Open();

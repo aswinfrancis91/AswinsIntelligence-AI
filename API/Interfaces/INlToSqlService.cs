@@ -1,6 +1,6 @@
 ﻿using AswinsIntelligence.Models;
 
-namespace AswinsIntelligence.Services;
+namespace AswinsIntelligence.Interfaces;
 
 public interface INlToSqlService
 {
@@ -11,6 +11,4 @@ public interface INlToSqlService
     /// <param name="model"></param>
     /// <returns>A <see cref="ApiResult"/> object containing the generated SQL query, thoughts, and any additional response details.</returns>
     ApiResult GenerateSqlQuery(string question, AIModels model, string userId);
-
-    string GenerateGraph(string question);
 }

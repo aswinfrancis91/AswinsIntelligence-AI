@@ -4,7 +4,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <NoWarn>SKEXP0001,SKEXP0070,OPENAI001,SKEXP0110</NoWarn>
+        <NoWarn>SKEXP0001,SKEXP0070,OPENAI001,SKEXP0110,OPENAI001</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

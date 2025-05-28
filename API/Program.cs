@@ -1,3 +1,4 @@
+using AswinsIntelligence.Interfaces;
 using AswinsIntelligence.Models;
 using AswinsIntelligence.Services;
 using Microsoft.SemanticKernel;
@@ -7,17 +8,23 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
+#region Local LLM
+
 var client = new HttpClient();
 client.Timeout = TimeSpan.FromMinutes(60);
 client.BaseAddress = new Uri(builder.Configuration["Ollama:Endpoint"]);
 
 builder.Services.AddOllamaChatCompletion(modelId: "deepseek-r1:latest", httpClient: client);
+
+#endregion
+
 builder.Services.AddSingleton<INlToSqlService, NlToSqlService>();
 builder.Services.AddScoped<IDbService, DbService>();
 builder.Services.AddSingleton<IConversationService, ConversationService>();
+builder.Services.AddSingleton<IImageGenerationService, ImageGenerationService>();
 
 builder.Services.AddOpenAIChatCompletion(modelId: "gpt-4-turbo", apiKey: builder.Configuration["OpenAi:ApiKey"]);
-builder.Services.AddSingleton<IChartGenerationService, ChartGenerationService>();
+
 
 builder.Services.AddCors(options =>
 {
@@ -56,16 +63,16 @@ app.MapPost("/ResetConversation", (string userId, IConversationService conversat
     })
     .WithName("ResetConversation");
 
-app.MapPost("/GenerateGraphDallE", (string question, INlToSqlService nlToSqlService, IDbService dbService) =>
+app.MapPost("/GenerateGraphDallE", (string question, IImageGenerationService imageGenerationService, IDbService dbService) =>
     {
-        var result = nlToSqlService.GenerateGraph(question);
+        var result = imageGenerationService.GenerateDalleImage(question);
         return result;
     })
     .WithName("GetDallEChart");
 
-app.MapPost("/GenerateGraph", (string question, IChartGenerationService chartGenerationService) =>
+app.MapPost("/GenerateGraph", (string question, IImageGenerationService imageGenerationService) =>
     {
-        var result = chartGenerationService.GenerateChart(question);
+        var result = imageGenerationService.GenerateChart(question);
         return result;
     })
     .WithName("GetChart");
