@@ -8,7 +8,7 @@ namespace API.Services;
 /// <summary>
 /// Provides database-related services and functionalities, including executing SQL queries and processing results.
 /// </summary>
-public class DbService(IConfiguration configuration, ILogger<DbService> logger) : IDbService
+public class DbService(IConfiguration configuration, ILogger<DbService> logger,SqlConnection sqlConnection) : IDbService
 {
     private readonly string _connectionString = configuration.GetConnectionString("DefaultConnection")
                                                 ?? throw new ArgumentNullException(nameof(_connectionString),
@@ -71,7 +71,7 @@ public class DbService(IConfiguration configuration, ILogger<DbService> logger) 
     {
         logger.LogDebug("Creating SQL connection");
 
-        using var connection = new SqlConnection(_connectionString);
+        using var connection = sqlConnection;
         try
         {
             connection.Open();

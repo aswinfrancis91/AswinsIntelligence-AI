@@ -51,7 +51,7 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
         };
     })
 );
-
+builder.AddSqlServerClient(connectionName: "DefaultConnection");
 var app = builder.Build();
 app.MapDefaultEndpoints();
 

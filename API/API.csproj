@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Aspire.Microsoft.Data.SqlClient" Version="9.3.0" />
         <PackageReference Include="Dapper" Version="2.1.66" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
         <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
@@ -30,12 +31,6 @@
       <None Update="Prompts\FormatDbResult.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Include="..\README.md">
-        <Link>README.md</Link>
-      </Content>
     </ItemGroup>
 
     <ItemGroup>

@@ -106,6 +106,7 @@ namespace API.Services
                 await foreach (ChatMessageContent response in agent.InvokeAsync(message))
                 {
                     _logger.LogDebug("Received response from AI agent");
+                    _logger.LogInformation("Response: {@Response}", response);
 
                     foreach (var item in response.Items)
                     {

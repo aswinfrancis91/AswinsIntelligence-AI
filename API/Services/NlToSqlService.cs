@@ -1,7 +1,7 @@
-﻿using System.Reflection;
-using API.Interfaces;
+﻿using API.Interfaces;
 using API.Models;
 using Microsoft.SemanticKernel.ChatCompletion;
+using System.Reflection;
 
 // ReSharper disable InconsistentNaming
 
@@ -52,6 +52,7 @@ public class NlToSqlService(IChatCompletionService chatCompletionService, IConve
             logger.LogInformation("Sending request to OpenAI for SQL generation");
             var reply = chatCompletionService.GetChatMessageContentAsync(chatHistory).GetAwaiter().GetResult();
             logger.LogDebug("Received response from OpenAI, content length: {Length}", reply.Content?.Length);
+            logger.LogInformation("Response: {@Response}", reply);
             var replyContent = reply.Content ?? string.Empty;
             chatHistory.AddMessage(reply.Role, replyContent);
 

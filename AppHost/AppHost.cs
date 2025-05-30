@@ -1,6 +1,8 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var api = builder.AddProject<Projects.API>("AswinsIntelligenceApi");
+var connectionString = builder.AddConnectionString("DefaultConnection");
+
+var api = builder.AddProject<Projects.API>("AswinsIntelligenceApi").WithReference(connectionString);
 
 var website = builder.AddNpmApp("react", "../ChatInterface", "dev")
     .WithReference(api)
