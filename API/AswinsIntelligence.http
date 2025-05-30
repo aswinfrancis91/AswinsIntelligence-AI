@@ -1,0 +1,19 @@
+@AswinsIntelligence_HostAddress = http://localhost:5257
+
+###
+POST {{AswinsIntelligence_HostAddress}}/api/image/generate-chart
+Content-Type: application/json
+
+{
+  "jsonData": "{ \"example\": \"data\" }"
+}
+
+###
+POST {{AswinsIntelligence_HostAddress}}/api/image/generate-dalle
+Content-Type: application/json
+ 
+{
+  "question": "Create a visualization of sample data"
+}
+
+###
