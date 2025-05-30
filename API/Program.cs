@@ -1,11 +1,13 @@
-using AswinsIntelligence.Interfaces;
-using AswinsIntelligence.Models;
-using AswinsIntelligence.Services;
+using API.Interfaces;
+using API.Models;
+using API.Services;
 using Microsoft.SemanticKernel;
 using Scalar.AspNetCore;
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
 
 #region Local LLM
@@ -36,7 +38,33 @@ builder.Services.AddCors(options =>
             .AllowCredentials());
 });
 
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.OpenTelemetry(options =>
+    {
+        options.ResourceAttributes = new Dictionary<string, object>
+        {
+            ["service.name"] = "AswinsIntelligence"
+        };
+    })
+);
+
 var app = builder.Build();
+app.MapDefaultEndpoints();
+
+app.UseSerilogRequestLogging(options =>
+{
+    options.GetLevel = (httpContext, elapsed, ex) => LogEventLevel.Information;
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+        diagnosticContext.Set("UserAgent", httpContext.Request.Headers["User-Agent"]);
+    };
+});
+
 
 if (app.Environment.IsDevelopment())
 {

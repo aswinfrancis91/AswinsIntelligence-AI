@@ -1,7 +1,7 @@
-﻿using AswinsIntelligence.Interfaces;
+﻿using API.Interfaces;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace AswinsIntelligence.Services;
+namespace API.Services;
 
 public class ConversationService : IConversationService
 {

@@ -1,4 +1,4 @@
-﻿namespace AswinsIntelligence.Interfaces;
+﻿namespace API.Interfaces;
 
 public interface IImageGenerationService
 {
@@ -15,5 +15,5 @@ public interface IImageGenerationService
     /// </summary>
     /// <param name="question">The JSON data and relevant user question to generate a visualization from.</param>
     /// <returns>A base64-encoded string representing the PNG image of the generated graph or chart.</returns>
-    string GenerateDalleImage(string question);
+    string? GenerateDalleImage(string question);
 }

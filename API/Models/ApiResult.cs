@@ -1,4 +1,4 @@
-﻿namespace AswinsIntelligence.Models;
+﻿namespace API.Models;
 
 public class ApiResult
 {

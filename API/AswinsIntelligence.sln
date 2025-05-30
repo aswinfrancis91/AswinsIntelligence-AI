@@ -1,6 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AswinsIntelligence", "AswinsIntelligence.csproj", "{7D5D93A5-0BA9-4442-B354-A121048C819F}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36121.58
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API.csproj", "{7D5D93A5-0BA9-4442-B354-A121048C819F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppHost", "..\AppHost\AppHost.csproj", "{EF728AFA-74D5-435C-9A8B-61CC0F8CF74D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDefaults", "..\ServiceDefaults\ServiceDefaults.csproj", "{EC36EE1B-88F9-4A55-91CD-8908E722942D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +19,19 @@ Global
 		{7D5D93A5-0BA9-4442-B354-A121048C819F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D5D93A5-0BA9-4442-B354-A121048C819F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D5D93A5-0BA9-4442-B354-A121048C819F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF728AFA-74D5-435C-9A8B-61CC0F8CF74D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF728AFA-74D5-435C-9A8B-61CC0F8CF74D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF728AFA-74D5-435C-9A8B-61CC0F8CF74D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF728AFA-74D5-435C-9A8B-61CC0F8CF74D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC36EE1B-88F9-4A55-91CD-8908E722942D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC36EE1B-88F9-4A55-91CD-8908E722942D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC36EE1B-88F9-4A55-91CD-8908E722942D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC36EE1B-88F9-4A55-91CD-8908E722942D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EDE45C4A-EFB2-46AD-B326-53AE63F01E5D}
 	EndGlobalSection
 EndGlobal

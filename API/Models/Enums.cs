@@ -1,5 +1,5 @@
 ﻿// ReSharper disable InconsistentNaming
-namespace AswinsIntelligence.Models;
+namespace API.Models;
 
 /// <summary>
 /// Represents the different AI models available for generating SQL queries or processing natural language inputs.
