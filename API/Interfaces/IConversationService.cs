@@ -1,6 +1,6 @@
 ﻿using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace AswinsIntelligence.Interfaces;
+namespace API.Interfaces;
 
 public interface IConversationService
 {

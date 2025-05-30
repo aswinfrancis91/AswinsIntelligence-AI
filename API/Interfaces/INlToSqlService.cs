@@ -1,6 +1,6 @@
-﻿using AswinsIntelligence.Models;
+﻿using API.Models;
 
-namespace AswinsIntelligence.Interfaces;
+namespace API.Interfaces;
 
 public interface INlToSqlService
 {

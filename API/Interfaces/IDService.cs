@@ -1,4 +1,4 @@
-﻿namespace AswinsIntelligence.Interfaces;
+﻿namespace API.Interfaces;
 
 public interface IDbService
 {
