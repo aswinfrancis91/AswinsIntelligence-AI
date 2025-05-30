@@ -75,10 +75,12 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("AllowReactApp");
 
-app.MapPost("/AskAswin", (string question, INlToSqlService nlToSqlService, IDbService dbService, string userId = "default", AIModels model = AIModels.DeepseekR1) =>
+app.MapPost("/AskAswin", (string question, INlToSqlService nlToSqlService, IDbService dbService, ILogger<Program> logger, string userId = "default", AIModels model = AIModels.DeepseekR1) =>
     {
+        logger.LogInformation("Received query: {Question} from user: {UserId} using model: {Model}", question, userId, model);
         var result = nlToSqlService.GenerateSqlQuery(question, model, userId);
         result.DbResult = dbService.ExecuteQuery(result.SqlQuery);
+        logger.LogInformation("Successfully executed SQL query and returned {RowCount} rows", result.DbResult.Length);
 
         return result;
     })
@@ -91,16 +93,22 @@ app.MapPost("/ResetConversation", (string userId, IConversationService conversat
     })
     .WithName("ResetConversation");
 
-app.MapPost("/GenerateGraphDallE", (string question, IImageGenerationService imageGenerationService, IDbService dbService) =>
+app.MapPost("/GenerateGraphDallE", (string question, IImageGenerationService imageGenerationService, ILogger<Program> logger) =>
     {
+        logger.LogInformation("Generating DALL-E image for question: {Question}", question);
         var result = imageGenerationService.GenerateDalleImage(question);
+        logger.LogInformation("Successfully generated DALL-E image");
+
         return result;
     })
     .WithName("GetDallEChart");
 
-app.MapPost("/GenerateGraph", (string question, IImageGenerationService imageGenerationService) =>
+app.MapPost("/GenerateGraph", (string question, IImageGenerationService imageGenerationService, ILogger<Program> logger) =>
     {
+        logger.LogInformation("Generating chart for question: {Question}", question);
         var result = imageGenerationService.GenerateChart(question);
+        logger.LogInformation("Successfully generated chart");
+
         return result;
     })
     .WithName("GetChart");
