@@ -23,6 +23,7 @@ This project serves as a learning platform for working with AI technologies, spe
 - **C# 13.0**: Uses the latest C# language features
 - **Semantic Kernel**: For structured AI interactions
 - **OpenAI SDK**: For direct API interactions with OpenAI services
+- **.NET Aspire**: For service orchestration, observability, and resilience
 - **Scalar**: For API documentation and reference
 - **React**: Frontend application with chat interface
 
@@ -42,21 +43,21 @@ The project uses Microsoft's Semantic Kernel framework for structured AI interac
 - Simplified agent creation and interaction
 
 Example (from ): `ImageGenerationService.cs`
-``` csharp
-// Using Semantic Kernel for chart generation
-OpenAIAssistantAgent agent = new(assistant, assistantClient);
-AgentThread thread = new OpenAIAssistantAgentThread(_assistantClient);
+```csharp 
+// Using Semantic Kernel for chart generation 
+OpenAIAssistantAgent agent = new(assistant, assistantClient); 
+AgentThread thread = new OpenAIAssistantAgentThread(_assistantClient); 
 ChatMessageContent message = new(AuthorRole.User, "...");
-```
+``` 
 ### 2. Direct API Calls
 For some functionality, the project makes direct API calls to AI services using HttpClient, showing a more hands-on approach:
 Example (from ): `ImageGenerationService.cs`
-``` csharp
-// Direct API call to DALL-E
-var client = new HttpClient();
-client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _configuration["OpenAi:ApiKey"]);
-var response = client.PostAsync("https://api.openai.com/v1/images/generations", content).GetAwaiter().GetResult();
-```
+```csharp 
+// Direct API call to DALL-E 
+var client = new HttpClient(); 
+client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _configuration["OpenAi:ApiKey"]); 
+var response = client.PostAsync("[https://api.openai.com/v1/images/generations](https://api.openai.com/v1/images/generations)", content).GetAwaiter().GetResult();
+``` 
 ## Getting Started
 ### Prerequisites
 - .NET 9.0 SDK
@@ -68,13 +69,28 @@ var response = client.PostAsync("https://api.openai.com/v1/images/generations", 
 The application uses `appsettings.json` for configuration. You'll need to set:
 - OpenAI API key
 - Ollama endpoint (for local LLM)
+- SQL Server connection string (for database queries)
 
 ### Running the Application
 1. Clone the repository
 2. Configure your API keys in `appsettings.json`
-3. Run the application: `dotnet run`
-4. The API will be available at [http://localhost:5257/scalar/v1](http://localhost:5257/scalar/v1)
-5. Launch the React frontend application
+3. Run the application using .NET Aspire: `dotnet run --project AppHost`
+4. The Aspire dashboard will open, providing monitoring and telemetry for your application
+5. The API will be available at [http://localhost:5257/scalar/v1](http://localhost:5257/scalar/v1)
+6. Launch the React frontend application
+
+## .NET Aspire Integration
+The project has been enhanced with .NET Aspire integration, which provides:
+- **Service Orchestration**: Simplified coordination of multiple services
+- **Observability**: Built-in logging, metrics, and distributed tracing
+- **Resilience**: HTTP resilience and service discovery
+- **Health Checks**: Automated health monitoring of services
+- **Telemetry**: OpenTelemetry integration for application insights
+
+The application now uses:
+- **Structured Logging**: Enhanced logging through Serilog with OpenTelemetry integration
+- **Service Defaults**: Common service configurations through Aspire's ServiceDefaults
+- **SQL Server Client**: Simplified database connections with resilience built-in
 
 ## API Endpoints
 - `/AskAswin`: Convert natural language to SQL, execute the query, and return results
@@ -92,10 +108,11 @@ The React application provides a user-friendly interface with:
   4. **Reset Conversation**: Clear the current conversation history
 
 ## Using the Application
-1. Start the backend server (.NET application)
-2. Launch the React frontend (runs on [http://localhost:5173](http://localhost:5173))
-3. Use the chat window to interact with the AI
-4. Use the function buttons to trigger specific AI capabilities:
+1. Start the application using .NET Aspire: `dotnet run --project AppHost`
+2. Monitor the application through the Aspire dashboard
+3. Launch the React frontend (runs on [http://localhost:5173](http://localhost:5173))
+4. Use the chat window to interact with the AI
+5. Use the function buttons to trigger specific AI capabilities:
   - Ask questions about your data using natural language
   - Generate visual representations of your data
   - Reset the conversation when needed
@@ -106,6 +123,7 @@ This project is designed for learning AI integration techniques. Here are some a
 - Understanding AI model differences (local vs cloud)
 - Strategies for managing conversation context
 - Techniques for generating and processing AI-created visuals
+- .NET Aspire for cloud-native application development
 
 ## License
 This project is intended for learning purposes. Please check the repository for license information.
